@@ -10,10 +10,12 @@ require_once 'connect.php';
 
 // Fetch all submissions
 $query = "SELECT * FROM submissions ORDER BY created_at DESC";
-$result = pg_query($conn);
-
-if (!$result) {
-    $error = "Error fetching submissions: " . pg_last_error($conn);
+try {
+    $stmt = $conn->query($query);
+    $submissions = $stmt->fetchAll(PDO::FETCH_ASSOC);
+} catch(PDOException $e) {
+    $error = "Error fetching submissions: " . $e->getMessage();
+    $submissions = array();
 }
 ?>
 <!DOCTYPE HTML>
@@ -46,7 +48,7 @@ if (!$result) {
     
     <?php if(isset($error)): ?>
         <p style="color: red;"><?php echo htmlspecialchars($error); ?></p>
-    <?php elseif($result && pg_num_rows($result) > 0): ?>
+    <?php elseif(!empty($submissions)): ?>
         <table>
             <tr>
                 <th>ID</th>
@@ -61,7 +63,7 @@ if (!$result) {
                 <th>Comments</th>
                 <th>Submitted At</th>
             </tr>
-            <?php while($row = pg_fetch_assoc($result)): ?>
+            <?php foreach($submissions as $row): ?>
                 <tr>
                     <td><?php echo htmlspecialchars($row['id']); ?></td>
                     <td><?php echo htmlspecialchars($row['group_members']); ?></td>
@@ -75,9 +77,9 @@ if (!$result) {
                     <td><?php echo htmlspecialchars($row['comments']); ?></td>
                     <td><?php echo htmlspecialchars($row['created_at']); ?></td>
                 </tr>
-            <?php endwhile; ?>
+            <?php endforeach; ?>
         </table>
-        <p><strong>Total Submissions: <?php echo pg_num_rows($result); ?></strong></p>
+        <p><strong>Total Submissions: <?php echo count($submissions); ?></strong></p>
     <?php else: ?>
         <p>No submissions found.</p>
     <?php endif; ?>

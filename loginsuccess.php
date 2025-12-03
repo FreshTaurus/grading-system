@@ -13,39 +13,40 @@ $message_type = '';
 
 // Handle form submission
 if($_SERVER['REQUEST_METHOD'] == 'POST' && isset($_POST['groupMembers'])) {
-    $group_members = pg_escape_string($conn, $_POST['groupMembers']);
-    $project_title = pg_escape_string($conn, $_POST['projectTitle']);
-    $group_number = pg_escape_string($conn, $_POST['groupNumber']);
-    $criteria1 = isset($_POST['criteria1']) ? pg_escape_string($conn, $_POST['criteria1']) : '';
-    $criteria2 = isset($_POST['criteria2']) ? pg_escape_string($conn, $_POST['criteria2']) : '';
-    $criteria3 = isset($_POST['criteria3']) ? pg_escape_string($conn, $_POST['criteria3']) : '';
-    $criteria4 = isset($_POST['criteria4']) ? pg_escape_string($conn, $_POST['criteria4']) : '';
-    $judge_name = pg_escape_string($conn, $_POST['judgeName']);
-    $comments = isset($_POST['comments']) ? pg_escape_string($conn, $_POST['comments']) : '';
-    
-    $query = "INSERT INTO submissions (group_members, project_title, group_number, criteria1, criteria2, criteria3, criteria4, judge_name, comments) 
-              VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9)";
-    
-    $result = pg_query_params($conn, $query, array(
-        $group_members,
-        $project_title,
-        $group_number,
-        $criteria1,
-        $criteria2,
-        $criteria3,
-        $criteria4,
-        $judge_name,
-        $comments
-    ));
-    
-    if($result) {
+    try {
+        $group_members = $_POST['groupMembers'];
+        $project_title = $_POST['projectTitle'];
+        $group_number = $_POST['groupNumber'];
+        $criteria1 = isset($_POST['criteria1']) ? $_POST['criteria1'] : '';
+        $criteria2 = isset($_POST['criteria2']) ? $_POST['criteria2'] : '';
+        $criteria3 = isset($_POST['criteria3']) ? $_POST['criteria3'] : '';
+        $criteria4 = isset($_POST['criteria4']) ? $_POST['criteria4'] : '';
+        $judge_name = $_POST['judgeName'];
+        $comments = isset($_POST['comments']) ? $_POST['comments'] : '';
+        
+        $query = "INSERT INTO submissions (group_members, project_title, group_number, criteria1, criteria2, criteria3, criteria4, judge_name, comments) 
+                  VALUES (:group_members, :project_title, :group_number, :criteria1, :criteria2, :criteria3, :criteria4, :judge_name, :comments)";
+        
+        $stmt = $conn->prepare($query);
+        $stmt->execute(array(
+            ':group_members' => $group_members,
+            ':project_title' => $project_title,
+            ':group_number' => $group_number,
+            ':criteria1' => $criteria1,
+            ':criteria2' => $criteria2,
+            ':criteria3' => $criteria3,
+            ':criteria4' => $criteria4,
+            ':judge_name' => $judge_name,
+            ':comments' => $comments
+        ));
+        
         $message = "Submission saved successfully!";
         $message_type = "success";
         // Clear form by redirecting
         header("location:loginsuccess.php?success=1");
         exit;
-    } else {
-        $message = "Error saving submission: " . pg_last_error($conn);
+    } catch(PDOException $e) {
+        $message = "Error saving submission: " . $e->getMessage();
         $message_type = "error";
     }
 }
