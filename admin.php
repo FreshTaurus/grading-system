@@ -5,6 +5,16 @@ if(!isset($_SESSION['loggedin']) || $_SESSION['loggedin'] != true || $_SESSION['
     header("location:index.php");
     exit;
 }
+
+require_once 'connect.php';
+
+// Fetch all submissions
+$query = "SELECT * FROM submissions ORDER BY created_at DESC";
+$result = pg_query($conn);
+
+if (!$result) {
+    $error = "Error fetching submissions: " . pg_last_error($conn);
+}
 ?>
 <!DOCTYPE HTML>
 
@@ -33,7 +43,44 @@ if(!isset($_SESSION['loggedin']) || $_SESSION['loggedin'] != true || $_SESSION['
     <h2>System Management</h2>
     
     <h3>View All Submissions</h3>
-    <p>All grading submissions will be displayed here.</p>
+    
+    <?php if(isset($error)): ?>
+        <p style="color: red;"><?php echo htmlspecialchars($error); ?></p>
+    <?php elseif($result && pg_num_rows($result) > 0): ?>
+        <table>
+            <tr>
+                <th>ID</th>
+                <th>Group Members</th>
+                <th>Project Title</th>
+                <th>Group Number</th>
+                <th>Criteria 1</th>
+                <th>Criteria 2</th>
+                <th>Criteria 3</th>
+                <th>Criteria 4</th>
+                <th>Judge Name</th>
+                <th>Comments</th>
+                <th>Submitted At</th>
+            </tr>
+            <?php while($row = pg_fetch_assoc($result)): ?>
+                <tr>
+                    <td><?php echo htmlspecialchars($row['id']); ?></td>
+                    <td><?php echo htmlspecialchars($row['group_members']); ?></td>
+                    <td><?php echo htmlspecialchars($row['project_title']); ?></td>
+                    <td><?php echo htmlspecialchars($row['group_number']); ?></td>
+                    <td><?php echo htmlspecialchars($row['criteria1']); ?></td>
+                    <td><?php echo htmlspecialchars($row['criteria2']); ?></td>
+                    <td><?php echo htmlspecialchars($row['criteria3']); ?></td>
+                    <td><?php echo htmlspecialchars($row['criteria4']); ?></td>
+                    <td><?php echo htmlspecialchars($row['judge_name']); ?></td>
+                    <td><?php echo htmlspecialchars($row['comments']); ?></td>
+                    <td><?php echo htmlspecialchars($row['created_at']); ?></td>
+                </tr>
+            <?php endwhile; ?>
+        </table>
+        <p><strong>Total Submissions: <?php echo pg_num_rows($result); ?></strong></p>
+    <?php else: ?>
+        <p>No submissions found.</p>
+    <?php endif; ?>
     
     <h3>Manage Judges</h3>
     <p>Judge management functionality will be available here.</p>
