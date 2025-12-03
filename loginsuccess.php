@@ -28,6 +28,14 @@ if($_SERVER['REQUEST_METHOD'] == 'POST' && isset($_POST['groupMembers'])) {
         $criteria4 = isset($_POST['criteria4']) ? $_POST['criteria4'] : '';
         $judge_name = $_POST['judgeName'];
         $comments = isset($_POST['comments']) ? $_POST['comments'] : '';
+
+        // Convert rubric selections into numeric scores
+        // Developing (0-10) -> 10 points, Accomplished (11-15) -> 15 points
+        $score1 = ($criteria1 === 'accomplished') ? 15 : 10;
+        $score2 = ($criteria2 === 'accomplished') ? 15 : 10;
+        $score3 = ($criteria3 === 'accomplished') ? 15 : 10;
+        $score4 = ($criteria4 === 'accomplished') ? 15 : 10;
+        $total_score = $score1 + $score2 + $score3 + $score4;
         
         $query = "INSERT INTO submissions (group_members, project_title, group_number, criteria1, criteria2, criteria3, criteria4, judge_name, comments) 
                   VALUES (:group_members, :project_title, :group_number, :criteria1, :criteria2, :criteria3, :criteria4, :judge_name, :comments)";
@@ -45,6 +53,9 @@ if($_SERVER['REQUEST_METHOD'] == 'POST' && isset($_POST['groupMembers'])) {
             ':comments' => $comments
         ));
         
+        // Store the judge's total score in the session so it can be shown after redirect
+        $_SESSION['last_total_score'] = $total_score;
+
         $message = "Submission saved successfully!";
         $message_type = "success";
         // Clear form by redirecting
@@ -58,7 +69,12 @@ if($_SERVER['REQUEST_METHOD'] == 'POST' && isset($_POST['groupMembers'])) {
 
 // Check for success message from redirect
 if(isset($_GET['success'])) {
-    $message = "Submission saved successfully!";
+    if(isset($_SESSION['last_total_score'])) {
+        $message = "Submission saved successfully! Total score: " . (int)$_SESSION['last_total_score'];
+        unset($_SESSION['last_total_score']);
+    } else {
+        $message = "Submission saved successfully!";
+    }
     $message_type = "success";
 }
 ?>

@@ -54,6 +54,7 @@ try {
     <?php if(isset($error)): ?>
         <p style="color: red;"><?php echo htmlspecialchars($error); ?></p>
     <?php elseif(!empty($submissions)): ?>
+        <?php $groupTotals = array(); ?>
         <table>
             <tr>
                 <th>ID</th>
@@ -66,9 +67,26 @@ try {
                 <th>Criteria 4</th>
                 <th>Judge Name</th>
                 <th>Comments</th>
+                <th>Total Score</th>
                 <th>Submitted At</th>
             </tr>
             <?php foreach($submissions as $row): ?>
+                <?php
+                    // Map rubric selections to numeric scores
+                    $s1 = ($row['criteria1'] === 'accomplished') ? 15 : 10;
+                    $s2 = ($row['criteria2'] === 'accomplished') ? 15 : 10;
+                    $s3 = ($row['criteria3'] === 'accomplished') ? 15 : 10;
+                    $s4 = ($row['criteria4'] === 'accomplished') ? 15 : 10;
+                    $total = $s1 + $s2 + $s3 + $s4;
+
+                    // Track totals per group for averaging
+                    $g = $row['group_number'];
+                    if (!isset($groupTotals[$g])) {
+                        $groupTotals[$g] = array('sum' => 0, 'count' => 0);
+                    }
+                    $groupTotals[$g]['sum'] += $total;
+                    $groupTotals[$g]['count']++;
+                ?>
                 <tr>
                     <td><?php echo htmlspecialchars($row['id']); ?></td>
                     <td><?php echo htmlspecialchars($row['group_members']); ?></td>
@@ -80,11 +98,30 @@ try {
                     <td><?php echo htmlspecialchars($row['criteria4']); ?></td>
                     <td><?php echo htmlspecialchars($row['judge_name']); ?></td>
                     <td><?php echo htmlspecialchars($row['comments']); ?></td>
+                    <td><?php echo $total; ?></td>
                     <td><?php echo htmlspecialchars($row['created_at']); ?></td>
                 </tr>
             <?php endforeach; ?>
         </table>
         <p><strong>Total Submissions: <?php echo count($submissions); ?></strong></p>
+
+        <?php if(!empty($groupTotals)): ?>
+            <h4>Group Average Scores</h4>
+            <table>
+                <tr>
+                    <th>Group Number</th>
+                    <th>Average Total Score</th>
+                </tr>
+                <?php foreach($groupTotals as $group => $data): 
+                    $avg = $data['sum'] / $data['count'];
+                ?>
+                    <tr>
+                        <td><?php echo htmlspecialchars($group); ?></td>
+                        <td><?php echo number_format($avg, 2); ?></td>
+                    </tr>
+                <?php endforeach; ?>
+            </table>
+        <?php endif; ?>
     <?php else: ?>
         <p>No submissions found.</p>
     <?php endif; ?>
