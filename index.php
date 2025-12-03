@@ -1,8 +1,14 @@
 <?php	
         session_start();       
 
-       $judge_username="user";	
-       $judge_password="password";
+       // Define 4 judge accounts
+       $judges = array(
+           'judge1' => 'judge1pass',
+           'judge2' => 'judge2pass',
+           'judge3' => 'judge3pass',
+           'judge4' => 'judge4pass'
+       );
+       
        $admin_username="admin";	
        $admin_password="admin123";	
 
@@ -34,8 +40,8 @@
                      header("location:admin.php");
                      exit;
                  }
-                 // Check judge credentials
-                 elseif($username == $judge_username && $password == $judge_password) {
+                 // Check judge credentials (any of the 4 judges)
+                 elseif(isset($judges[$username]) && $password == $judges[$username]) {
                      $_SESSION['loggedin'] = true;
                      $_SESSION['role'] = 'judge';
                      $_SESSION['username'] = $username;
@@ -127,7 +133,7 @@
             <button type="submit">Login</button>
         </form>
         <p style="text-align: center; margin-top: 20px; font-size: 12px; color: #666;">
-            Judge: user / password<br>
+            Judges: judge1/judge1pass, judge2/judge2pass, judge3/judge3pass, judge4/judge4pass<br>
             Admin: admin / admin123
         </p>
     </div>
