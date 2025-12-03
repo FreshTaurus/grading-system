@@ -74,5 +74,4 @@ try {
     // Throw exception instead of die() so calling code can handle it
     throw new Exception($db_error_details);
 }
-?>
 
