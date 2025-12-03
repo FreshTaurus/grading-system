@@ -28,7 +28,8 @@ if ($db_connection_string) {
         $db_port = $parsed['port'] ?? '5432';
         $db_name = ltrim($parsed['path'] ?? '/postgres', '/');
         $db_user = $parsed['user'] ?? 'postgres';
-        $db_password = $parsed['pass'] ?? '';
+        // Decode URL-encoded password (in case it contains special characters)
+        $db_password = isset($parsed['pass']) ? urldecode($parsed['pass']) : '';
     }
 }
 
@@ -52,14 +53,26 @@ try {
     
     $conn = new PDO($dsn, $db_user, $db_password, $options);
 } catch(PDOException $e) {
-    // More detailed error message
-    $error_msg = "Connection failed: " . $e->getMessage();
-    $error_msg .= "\n\nTroubleshooting:";
-    $error_msg .= "\n- Check if DATABASE_URL is set correctly";
-    $error_msg .= "\n- Verify Supabase project is active";
-    $error_msg .= "\n- Check network connectivity from Render to Supabase";
-    $error_msg .= "\n- Ensure Supabase allows connections from Render's IP addresses";
-    die($error_msg);
+    // Store error details instead of outputting (to avoid header issues)
+    $db_error = $e->getMessage();
+    $db_error_details = "Connection failed: " . $db_error;
+    
+    // Check for specific error types and add troubleshooting info
+    if (strpos($db_error, 'password authentication failed') !== false) {
+        $db_error_details .= "\n\n⚠️ PASSWORD AUTHENTICATION ERROR:";
+        $db_error_details .= "\n- Verify the password in your DATABASE_URL is correct";
+        $db_error_details .= "\n- Get the correct password from: Supabase > Project Settings > Database";
+        $db_error_details .= "\n- Make sure you're copying the ENTIRE connection string from Supabase";
+        $db_error_details .= "\n- If password contains special characters, ensure they are URL-encoded";
+        $db_error_details .= "\n- You can reset your database password in Supabase Database Settings if needed";
+    } else {
+        $db_error_details .= "\n- Check if DATABASE_URL is set correctly";
+        $db_error_details .= "\n- Verify Supabase project is active";
+        $db_error_details .= "\n- Check network connectivity from Render to Supabase";
+    }
+    
+    // Throw exception instead of die() so calling code can handle it
+    throw new Exception($db_error_details);
 }
 ?>
 

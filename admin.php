@@ -6,7 +6,12 @@ if(!isset($_SESSION['loggedin']) || $_SESSION['loggedin'] != true || $_SESSION['
     exit;
 }
 
-require_once 'connect.php';
+try {
+    require_once 'connect.php';
+} catch(Exception $e) {
+    // Database connection failed - show error page
+    die("<!DOCTYPE HTML><html><head><title>Database Error</title></head><body><h1>Database Connection Error</h1><pre>" . htmlspecialchars($e->getMessage()) . "</pre></body></html>");
+}
 
 // Fetch all submissions
 $query = "SELECT * FROM submissions ORDER BY created_at DESC";
