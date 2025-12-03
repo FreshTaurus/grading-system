@@ -3,22 +3,50 @@
 <?php	
         session_start();       
 
-       $username="user";	
-       $password="password";	
+       $judge_username="user";	
+       $judge_password="password";
+       $admin_username="admin";	
+       $admin_password="admin123";	
 
-       if(isset($_SESSION['loggedin']) && $_SESSION['loggedin']==true) {                
-                 header("location:loginsuccess.php");  	
+       // Handle logout
+       if(isset($_GET['logout'])) {
+           session_destroy();
+           header("location:index.php");
+           exit;
+       }
+
+       if(isset($_SESSION['loggedin']) && $_SESSION['loggedin']==true) {
+                 if($_SESSION['role'] == 'admin') {
+                     header("location:admin.php");
+                 } else {
+                     header("location:loginsuccess.php");
+                 }
+                 exit;
        }	
 
-       if(isset($_POST['username']) && isset($_POST['password'])) {           
-                     if($_POST['username'] == $username && $_POST['password']==$password) {		     		
-                            $_SESSION['loggedin']=true;
-                            header("location:loginsuccess.php");
-                            exit;
-                     }	
-                     else {
-                            echo "Username or password is incorrect";
-                     }
+       if(isset($_POST['username']) && isset($_POST['password'])) {
+                 $username = $_POST['username'];
+                 $password = $_POST['password'];
+                 
+                 // Check admin credentials
+                 if($username == $admin_username && $password == $admin_password) {
+                     $_SESSION['loggedin'] = true;
+                     $_SESSION['role'] = 'admin';
+                     $_SESSION['username'] = $username;
+                     header("location:admin.php");
+                     exit;
+                 }
+                 // Check judge credentials
+                 elseif($username == $judge_username && $password == $judge_password) {
+                     $_SESSION['loggedin'] = true;
+                     $_SESSION['role'] = 'judge';
+                     $_SESSION['username'] = $username;
+                     header("location:loginsuccess.php");
+                     exit;
+                 }
+                 else {
+                     $error = "Username or password is incorrect";
+                 }
         }
 ?>
 
@@ -84,7 +112,10 @@
 </head>
 <body>
     <div class="login-container">
-        <h2>Judge Login</h2>
+        <h2>Login</h2>
+        <?php if(isset($error)): ?>
+            <div class="error"><?php echo $error; ?></div>
+        <?php endif; ?>
         <form method="POST" action="">
             <div class="form-group">
                 <label for="username">Username:</label>
@@ -96,6 +127,10 @@
             </div>
             <button type="submit">Login</button>
         </form>
+        <p style="text-align: center; margin-top: 20px; font-size: 12px; color: #666;">
+            Judge: user / password<br>
+            Admin: admin / admin123
+        </p>
     </div>
 </body>
 </html>

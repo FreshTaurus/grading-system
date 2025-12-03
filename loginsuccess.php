@@ -22,6 +22,8 @@ if(!isset($_SESSION['loggedin']) || $_SESSION['loggedin'] != true) {
     </style>
 </head>
 <body>
+    <p>Welcome, <?php echo htmlspecialchars($_SESSION['username']); ?> (Judge) | <a href="index.php?logout=1">Logout</a></p>
+    
     <h1>Computer Science Project</h1>
     
     <form method="POST" action="">
