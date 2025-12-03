@@ -125,12 +125,6 @@ try {
     <?php else: ?>
         <p>No submissions found.</p>
     <?php endif; ?>
-    
-    <h3>Manage Judges</h3>
-    <p>Judge management functionality will be available here.</p>
-    
-    <h3>Reports</h3>
-    <p>Generate reports and statistics.</p>
 </body>
 </html>
 
