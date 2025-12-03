@@ -72,11 +72,11 @@ try {
             </tr>
             <?php foreach($submissions as $row): ?>
                 <?php
-                    // Map rubric selections to numeric scores
-                    $s1 = ($row['criteria1'] === 'accomplished') ? 15 : 10;
-                    $s2 = ($row['criteria2'] === 'accomplished') ? 15 : 10;
-                    $s3 = ($row['criteria3'] === 'accomplished') ? 15 : 10;
-                    $s4 = ($row['criteria4'] === 'accomplished') ? 15 : 10;
+                    // Criteria values are stored as individual numeric scores (0-10 and 11-15)
+                    $s1 = (int)$row['criteria1'];
+                    $s2 = (int)$row['criteria2'];
+                    $s3 = (int)$row['criteria3'];
+                    $s4 = (int)$row['criteria4'];
                     $total = $s1 + $s2 + $s3 + $s4;
 
                     // Track totals per group for averaging

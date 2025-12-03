@@ -22,19 +22,19 @@ if($_SERVER['REQUEST_METHOD'] == 'POST' && isset($_POST['groupMembers'])) {
         $group_members = $_POST['groupMembers'];
         $project_title = $_POST['projectTitle'];
         $group_number = $_POST['groupNumber'];
-        $criteria1 = isset($_POST['criteria1']) ? $_POST['criteria1'] : '';
-        $criteria2 = isset($_POST['criteria2']) ? $_POST['criteria2'] : '';
-        $criteria3 = isset($_POST['criteria3']) ? $_POST['criteria3'] : '';
-        $criteria4 = isset($_POST['criteria4']) ? $_POST['criteria4'] : '';
+        // Criteria values are individual numeric scores chosen by the judge
+        $criteria1 = isset($_POST['criteria1']) ? (int)$_POST['criteria1'] : 0;
+        $criteria2 = isset($_POST['criteria2']) ? (int)$_POST['criteria2'] : 0;
+        $criteria3 = isset($_POST['criteria3']) ? (int)$_POST['criteria3'] : 0;
+        $criteria4 = isset($_POST['criteria4']) ? (int)$_POST['criteria4'] : 0;
         $judge_name = $_POST['judgeName'];
         $comments = isset($_POST['comments']) ? $_POST['comments'] : '';
 
-        // Convert rubric selections into numeric scores
-        // Developing (0-10) -> 10 points, Accomplished (11-15) -> 15 points
-        $score1 = ($criteria1 === 'accomplished') ? 15 : 10;
-        $score2 = ($criteria2 === 'accomplished') ? 15 : 10;
-        $score3 = ($criteria3 === 'accomplished') ? 15 : 10;
-        $score4 = ($criteria4 === 'accomplished') ? 15 : 10;
+        // Total score is the sum of the individual numeric scores
+        $score1 = $criteria1;
+        $score2 = $criteria2;
+        $score3 = $criteria3;
+        $score4 = $criteria4;
         $total_score = $score1 + $score2 + $score3 + $score4;
         
         $query = "INSERT INTO submissions (group_members, project_title, group_number, criteria1, criteria2, criteria3, criteria4, judge_name, comments) 
@@ -119,23 +119,79 @@ if(isset($_GET['success'])) {
             </tr>
             <tr>
                 <td>Articulate requirements</td>
-                <td><input type="radio" name="criteria1" value="developing"></td>
-                <td><input type="radio" name="criteria1" value="accomplished"></td>
+                <td>
+                    <?php for($i = 0; $i <= 10; $i++): ?>
+                        <label>
+                            <input type="radio" name="criteria1" value="<?php echo $i; ?>" <?php echo $i === 0 ? 'required' : ''; ?>>
+                            <?php echo $i; ?>
+                        </label>
+                    <?php endfor; ?>
+                </td>
+                <td>
+                    <?php for($i = 11; $i <= 15; $i++): ?>
+                        <label>
+                            <input type="radio" name="criteria1" value="<?php echo $i; ?>">
+                            <?php echo $i; ?>
+                        </label>
+                    <?php endfor; ?>
+                </td>
             </tr>
             <tr>
                 <td>Choose appropriate tools and methods for each task</td>
-                <td><input type="radio" name="criteria2" value="developing"></td>
-                <td><input type="radio" name="criteria2" value="accomplished"></td>
+                <td>
+                    <?php for($i = 0; $i <= 10; $i++): ?>
+                        <label>
+                            <input type="radio" name="criteria2" value="<?php echo $i; ?>" <?php echo $i === 0 ? 'required' : ''; ?>>
+                            <?php echo $i; ?>
+                        </label>
+                    <?php endfor; ?>
+                </td>
+                <td>
+                    <?php for($i = 11; $i <= 15; $i++): ?>
+                        <label>
+                            <input type="radio" name="criteria2" value="<?php echo $i; ?>">
+                            <?php echo $i; ?>
+                        </label>
+                    <?php endfor; ?>
+                </td>
             </tr>
             <tr>
                 <td>Give clear and coherent oral presentation</td>
-                <td><input type="radio" name="criteria3" value="developing"></td>
-                <td><input type="radio" name="criteria3" value="accomplished"></td>
+                <td>
+                    <?php for($i = 0; $i <= 10; $i++): ?>
+                        <label>
+                            <input type="radio" name="criteria3" value="<?php echo $i; ?>" <?php echo $i === 0 ? 'required' : ''; ?>>
+                            <?php echo $i; ?>
+                        </label>
+                    <?php endfor; ?>
+                </td>
+                <td>
+                    <?php for($i = 11; $i <= 15; $i++): ?>
+                        <label>
+                            <input type="radio" name="criteria3" value="<?php echo $i; ?>">
+                            <?php echo $i; ?>
+                        </label>
+                    <?php endfor; ?>
+                </td>
             </tr>
             <tr>
                 <td>Functioned well as a team</td>
-                <td><input type="radio" name="criteria4" value="developing"></td>
-                <td><input type="radio" name="criteria4" value="accomplished"></td>
+                <td>
+                    <?php for($i = 0; $i <= 10; $i++): ?>
+                        <label>
+                            <input type="radio" name="criteria4" value="<?php echo $i; ?>" <?php echo $i === 0 ? 'required' : ''; ?>>
+                            <?php echo $i; ?>
+                        </label>
+                    <?php endfor; ?>
+                </td>
+                <td>
+                    <?php for($i = 11; $i <= 15; $i++): ?>
+                        <label>
+                            <input type="radio" name="criteria4" value="<?php echo $i; ?>">
+                            <?php echo $i; ?>
+                        </label>
+                    <?php endfor; ?>
+                </td>
             </tr>
             <tr>
                 <td><strong>Total</strong></td>
