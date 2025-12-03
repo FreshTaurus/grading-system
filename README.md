@@ -159,6 +159,43 @@ Fatal error: Uncaught Error: Call to undefined function pg_connect()
 
 ---
 
+### Error 4: Network Unreachable / IPv4 Compatibility
+**Error Message:**
+```
+Connection failed: SQLSTATE[08006] [7] connection to server at "db.xxx.supabase.co" (2600:1f16:...), port 5432 failed: Network is unreachable
+```
+
+**Cause:**
+- Supabase's direct connection (port 5432) uses IPv6 by default
+- Many hosting providers (like Render) are IPv4-only networks
+- The direct connection is not compatible with IPv4-only environments
+
+**Solution:**
+- **Use Supabase Session Pooler instead of Direct Connection**
+- In Supabase dashboard: Project Settings > Database > Connection Pooling
+- Select "Session" mode (or "Transaction" mode)
+- Copy the connection string (uses port **6543** or **5432** with pooler host)
+- Update `DATABASE_URL` environment variable in Render with the pooler connection string
+
+**Steps:**
+1. Go to Supabase: Project Settings > Database > Connection Pooling
+2. Select "Session" mode
+3. Copy the connection string (format: `postgresql://postgres:[PASSWORD]@[POOLER-HOST]:6543/postgres`)
+4. In Render dashboard, update `DATABASE_URL` environment variable
+5. Redeploy your application
+
+**Why Session Pooler Works:**
+- Designed for serverless and container environments
+- IPv4 compatible
+- Better connection management
+- Handles connection pooling automatically
+
+**Files Changed:**
+- `connect.php` - Added connection timeout and better error handling
+- README.md - Added this troubleshooting section
+
+---
+
 ## Setup Instructions
 
 ### Prerequisites
@@ -178,7 +215,11 @@ Fatal error: Uncaught Error: Call to undefined function pg_connect()
    - Create a free account at [Supabase](https://supabase.com)
    - Create a new project
    - Go to SQL Editor and run `database_schema.sql`
-   - Get your connection string from Project Settings > Database
+   - **Important**: For Render deployment, use **Session Pooler** connection string:
+     - Go to: Project Settings > Database > Connection Pooling
+     - Select "Session" mode
+     - Copy the connection string (port 6543)
+     - This is IPv4 compatible and works with Render
 
 3. **Configure Environment Variables**
    Create a `.env` file or set environment variables:
@@ -235,8 +276,11 @@ CREATE TABLE IF NOT EXISTS submissions (
    - Select "Web Service"
 
 2. **Configure Environment Variables**
-   - Add `DATABASE_URL` with your Supabase connection string
-   - Format: `postgresql://postgres:[PASSWORD]@[HOST]:5432/postgres`
+   - Add `DATABASE_URL` with your Supabase **Session Pooler** connection string
+   - **Important**: Use the Session Pooler connection (not direct connection)
+   - Get it from: Supabase > Project Settings > Database > Connection Pooling > Session mode
+   - Format: `postgresql://postgres:[PASSWORD]@[POOLER-HOST]:6543/postgres`
+   - ⚠️ **Do NOT use the direct connection** (port 5432) - it's IPv6 only and won't work with Render
 
 3. **Build Settings**
    - Render will automatically detect the Dockerfile
@@ -322,9 +366,13 @@ Required environment variable:
 
 ### Database Connection Issues
 - Verify `DATABASE_URL` environment variable is set correctly
+- **Use Session Pooler connection string** (not direct connection) for Render deployment
 - Check Supabase project is active
 - Ensure database schema is created
-- Verify network connectivity to Supabase
+- If getting "Network is unreachable" error:
+  - Switch to Session Pooler connection string
+  - Session Pooler is IPv4 compatible and works with Render
+  - Get it from: Supabase > Project Settings > Database > Connection Pooling
 
 ### Session Issues
 - Ensure PHP code comes before HTML output
